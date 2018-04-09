@@ -1,12 +1,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from "@angular/common/http";
 import { RequestOptions } from '@angular/http';
+
 import { Observable } from 'rxjs/Observable';
+import { catchError, map, tap } from 'rxjs/operators';
 import 'rxjs/add/operator/map'
 import 'rxjs/add/operator/catch';
 import 'rxjs/add/observable/throw';
-
-import { catchError, map, tap } from 'rxjs/operators';
 
 import { environment } from '../../environments/environment';
 import { Token } from '../token'
@@ -30,7 +30,8 @@ export class LoginService {
       return this.http.post(url, body)      
       			.map((token: Token) => {      				
       				localStorage.setItem('token', JSON.stringify(token.access_token));
-      				return token.access_token      				
+      				
+              return token.access_token      				
       			})
       			.catch(this.handleError);    			
   }
@@ -53,9 +54,7 @@ export class LoginService {
 
   logout() {
   	localStorage.removeItem('token');
-  	// console.log ('localstorage logout' + localStorage['csrf-token']);
-  	const url = `${this.mainUrl}user/login?_format=json`;  
-  	return url;
+  	console.log ('localstorage logout' + localStorage['token']);  
   }
 
 }
