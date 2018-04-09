@@ -5,6 +5,8 @@ import { NgModule } from '@angular/core';
 // StaticInjectorError(Platform: core)[UserlistService -> HttpClient]: 
 import { HttpClient, HttpHeaders, HttpClientModule } from '@angular/common/http';
 
+import { JwtModule } from '@auth0/angular-jwt';
+
 import { AppRoutingModule } from './app-routing.module';
 
 import { AppComponent } from './app.component';
@@ -14,7 +16,12 @@ import { UserloginComponent } from './userlogin/userlogin.component';
 import { LoginService } from './services/login.service';
 
 import { FormsModule } from '@angular/forms';
+import { AuthService } from './services/auth.service';
+import { GuardService } from './services/guard.service';
 
+export function tokenGetter() {
+  return localStorage.getItem('token');
+}
 
 @NgModule({
   declarations: [
@@ -26,9 +33,16 @@ import { FormsModule } from '@angular/forms';
     BrowserModule,
     HttpClientModule,
     AppRoutingModule,
-    FormsModule
+    FormsModule, 
+    JwtModule.forRoot({
+      config: {
+        tokenGetter: tokenGetter,
+        whitelistedDomains: ['localhost:4200']
+        // blacklistedRoutes: ['localhost:3001/auth/']
+      }
+    })
   ],
-  providers: [UserlistService, LoginService],
+  providers: [UserlistService, LoginService, AuthService, GuardService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

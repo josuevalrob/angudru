@@ -1,14 +1,13 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 
-import { UserlistComponent } from './userlist/userlist.component'
+import { GuardService } from './services/guard.service'
 
+import { UserlistComponent } from './userlist/userlist.component'
 import { UserloginComponent } from './userlogin/userlogin.component'
 
 const routes: Routes = [
-  // { path: '', redirectTo: '/users', pathMatch: 'full' },
-  { path: '', component: UserlistComponent },
-  // { path: '', component: HomeComponent, canActivate: [AuthGuard] },
+  { path: '', component: UserlistComponent, canActivate: [GuardService] },
   { path: 'login', component: UserloginComponent},
   //Home sweet home:
   { path: '**', redirectTo: '' }
