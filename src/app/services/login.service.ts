@@ -11,6 +11,8 @@ import 'rxjs/add/observable/throw';
 import { environment } from '../../environments/environment';
 import { Token } from '../token'
 
+import { HandleErrorService } from './handle-error.service';
+
 @Injectable()
 export class LoginService {
 	private mainUrl = environment.mainUrl;  // URL to web api
@@ -18,7 +20,7 @@ export class LoginService {
 	private client_id = environment.client_id
 	private client_secret = environment.client_secret
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, private handleError: HandleErrorService) { }
   login (user, pass): Observable<Token> {  	
   	  const url = `${this.mainUrl}oauth/token`;  
   	  let body= new FormData();  	  
@@ -33,28 +35,13 @@ export class LoginService {
       				
               return token.access_token      				
       			})
-      			.catch(this.handleError);    			
+      			// .catch(this.handleError)
+            .catch(this.handleError.handleError);    			
   }
-  private handleError(err: HttpErrorResponse) {
-  	  let errorMessage = '';
-  	  if (err.error instanceof Error) {
-  	    // A client-side or network error occurred. Handle it accordingly.
-  	    errorMessage = `An error occurred: ${err.error.message}`;
-  	  } else {
-  	    // The backend returned an unsuccessful response code.
-  	    // The response body may contain clues as to what went wrong,  	    
-  	    if (err.status == 401) {
-  	    	 errorMessage = `Invalid credentials, ${err.error.message}`;
-  	    }
-  	  }
-  	  
-  	  return Observable.throw(errorMessage);
-
-  }
-
+  
   logout() {
   	localStorage.removeItem('token');
-  	console.log ('localstorage logout' + localStorage['token']);  
+  	// console.log ('localstorage logout' + localStorage['token']);  
   }
 
 }

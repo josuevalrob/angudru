@@ -18,6 +18,7 @@ import { LoginService } from './services/login.service';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from './services/auth.service';
 import { GuardService } from './services/guard.service';
+import { HandleErrorService } from './services/handle-error.service';
 
 export function tokenGetter() {
   return localStorage.getItem('token');
@@ -42,7 +43,7 @@ export function tokenGetter() {
       }
     })
   ],
-  providers: [UserlistService, LoginService, AuthService, GuardService],
+  providers: [UserlistService, LoginService, AuthService, GuardService, HandleErrorService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
