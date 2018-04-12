@@ -10,7 +10,7 @@ export const environment = {
   grant_type: "password",
   client_id: "f011cc58-40ce-43a9-8f71-842494e3a997",
   client_secret: "abc123",
-  httpHaljson : {
-    headers: new HttpHeaders({ "Content-Type": "application/x-www-form-urlencoded"})
-  }
+  // httpHaljson : {
+  //   headers: new HttpHeaders({ "Content-Type": "application/x-www-form-urlencoded"})
+  // }
 };

@@ -26,7 +26,7 @@ export class UserloginComponent implements OnInit {
   		this.LoginService.login(user.name, user.pass)
   		  .subscribe(
           data => {             
-            console.log(JSON.stringify(data));
+             // console.log(JSON.stringify(data));
             this.router.navigate (['/']);                        
   		     },         
           error => this.errorMsg = error
