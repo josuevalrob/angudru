@@ -30,9 +30,10 @@ export class LoginService {
   	  body.append("username", user);
   	  body.append("password", pass);  	  
       return this.http.post(url, body)      
-      			.map((token: Token) => {      				
+      			.map((token: Token) => {      		
+              // let tokenParse = JSON.parse(token.access_token)		
+      				// localStorage.setItem('token', JSON.stringify(tokenParse));
       				localStorage.setItem('token', JSON.stringify(token.access_token));
-      				
               return token.access_token      				
       			})
       			// .catch(this.handleError)
