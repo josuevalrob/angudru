@@ -19,7 +19,11 @@ import { FormsModule } from '@angular/forms';
 import { AuthService } from './services/auth.service';
 import { GuardService } from './services/guard.service';
 import { HandleErrorService } from './services/handle-error.service';
+import { RefreshTokenService } from './services/refresh-token.service';
 
+import { HTTP_INTERCEPTORS } from '@angular/common/http';
+import { RequestInterceptor } from './interceptor/request.interceptor';
+import { ResponseInterceptor } from './interceptor/response.interceptor'
 export function tokenGetter() {
   return localStorage.getItem('token');
 }
@@ -28,7 +32,7 @@ export function tokenGetter() {
   declarations: [
     AppComponent,
     UserlistComponent,
-    UserloginComponent
+    UserloginComponent,
   ],
   imports: [
     BrowserModule,
@@ -43,7 +47,24 @@ export function tokenGetter() {
       }
     })
   ],
-  providers: [UserlistService, LoginService, AuthService, GuardService, HandleErrorService],
+  providers: [
+    UserlistService, 
+    LoginService, 
+    AuthService, 
+    GuardService, 
+    HandleErrorService, 
+    RefreshTokenService,
+    {      
+      provide: HTTP_INTERCEPTORS,
+      useClass: RequestInterceptor,
+      multi: true
+    },
+    {      
+      provide: HTTP_INTERCEPTORS,
+      useClass: ResponseInterceptor,
+      multi: true
+    }
+    ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

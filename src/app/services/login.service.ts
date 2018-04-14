@@ -9,7 +9,7 @@ import 'rxjs/add/operator/catch';
 import 'rxjs/add/observable/throw';
 
 import { environment } from '../../environments/environment';
-import { Token } from '../token'
+import { Token } from '../token';
 
 import { HandleErrorService } from './handle-error.service';
 
@@ -34,6 +34,7 @@ export class LoginService {
               // let tokenParse = JSON.parse(token.access_token)		
       				// localStorage.setItem('token', JSON.stringify(tokenParse));
       				localStorage.setItem('token', JSON.stringify(token.access_token));
+              localStorage.setItem('refresh_token', JSON.stringify(token.refresh_token));
               return token.access_token      				
       			})
       			// .catch(this.handleError)
@@ -42,6 +43,7 @@ export class LoginService {
   
   logout() {
   	localStorage.removeItem('token');
+    localStorage.removeItem('refresh_token');
   	// console.log ('localstorage logout' + localStorage['token']);  
   }
 

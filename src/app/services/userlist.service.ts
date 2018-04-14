@@ -24,16 +24,13 @@ export class UserlistService {
   private mainUrl = environment.mainUrl + 'user-list?_format=json';  // URL to web api
   
   getUserList(): Observable<UserList[]> {
-  	let tokenParse = JSON.parse(this.token)    
-    // let myHeaders = new Headers();
-    // myHeaders.set('Authorization', `Bearer ${tokenParse}`);
-    // let options = new RequestOptions({ headers: myHeaders});
-    const users = this.http.get<UserList[]>(this.mainUrl, { headers:new HttpHeaders().append('Authorization', `Bearer ${tokenParse}`)})
-  	// const users = this.http.get<UserList[]>(this.mainUrl, options);
+  	const users = this.http.get<UserList[]>(this.mainUrl);
+    // const users = this.http.get<UserList[]>(this.mainUrl, 
+    //         { headers:new HttpHeaders().append('Authorization', `Bearer ${this.auth.getToken()}`)})
     return users
             .catch(this.handleError.handleError);     	  
   }
-
+  
   canActivate() {
   	if (this.auth.isAuthenticated()){
   		// console.log ('bye');
@@ -42,10 +39,3 @@ export class UserlistService {
   	}
   }
 }
-
-  // const headers = new Headers().append('Authorization', `Bearer ${tokenParse}`);
-  // console.log(JSON.stringify(tokenParse));
-  // headers.set('Authorization', `Bearer ${tokenParse}`);
-  // const opts = new RequestOptions({ headers: headers });  
-  // console.log(JSON.stringify(opts));
-  // const users = this.http.get<UserList[]>(this.mainUrl, opts)
