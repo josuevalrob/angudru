@@ -19,23 +19,15 @@ import { AuthService } from './auth.service';
 @Injectable()
 export class UserlistService {
 
-  constructor(private http: HttpClient, public auth: AuthService, private handleError: HandleErrorService) { }
-  private token = this.canActivate();  
+  constructor(private http: HttpClient, public auth: AuthService, private handleError: HandleErrorService) { }  
   private mainUrl = environment.mainUrl + 'user-list?_format=json';  // URL to web api
   
-  getUserList(): Observable<UserList[]> {
+  getUserList(): Observable<UserList[]> {    
   	const users = this.http.get<UserList[]>(this.mainUrl);
     // const users = this.http.get<UserList[]>(this.mainUrl, 
     //         { headers:new HttpHeaders().append('Authorization', `Bearer ${this.auth.getToken()}`)})
     return users
             .catch(this.handleError.handleError);     	  
   }
-  
-  canActivate() {
-  	if (this.auth.isAuthenticated()){
-  		// console.log ('bye');
-  		const token = localStorage.getItem('token');
-  		return token;
-  	}
-  }
+   
 }

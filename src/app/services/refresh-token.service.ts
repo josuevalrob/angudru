@@ -27,24 +27,27 @@ export class RefreshTokenService {
   refreshToken(): Observable<string> {
     let refreshAuth = this.getRefreshToken(); //get refresh token from storage
     let url: string = this.mainUrl + "oauth/token";
+    console.log ('refresh ' + JSON.stringify(refreshAuth));
 
     let body= new FormData();  	  
     body.append("grant_type", "refresh_token");
     body.append("refresh_token", refreshAuth)
     body.append("client_id", this.client_id);
     body.append("client_secret", this.client_secret);
+    
     return this.http.post(url, body)      
 		.map((token: Token) => {      		
-	        // let tokenParse = JSON.parse(token.access_token)		
-			// localStorage.setItem('token', JSON.stringify(tokenParse));
-			localStorage.setItem('token', JSON.stringify(token.access_token));
-	        localStorage.setItem('refresh_token', JSON.stringify(token.refresh_token));
-    		return token.access_token
+			localStorage.setItem('new_token', JSON.stringify(token.access_token));
+      localStorage.setItem('new_refresh_token', JSON.stringify(token.refresh_token));
+    	console.log (JSON.stringify ('new token from the service ' + token.refresh_token));
+      	return token.refresh_token;
 		});
   }
 
   public getRefreshToken(): string {
-    return localStorage.getItem('refresh_token');
+    let refresh_token = localStorage.getItem('refresh_token');
+    return JSON.parse(refresh_token);
+
   }
 
 }

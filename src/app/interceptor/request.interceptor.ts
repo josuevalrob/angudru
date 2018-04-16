@@ -19,11 +19,12 @@ export class RequestInterceptor implements HttpInterceptor {
     // Using interceptors is all about changing outgoing requests and incoming responses, 
     // but we can’t tamper with the original request–it needs to be immutable. 
     // To make changes we need to clone the original request.      
+      console.log('intercepted request' + JSON.stringify(request));
       request = request.clone({
         // add an Authorization header with an auth scheme of Bearer followed by the 
         // JSON Web Token in local storage which we get from a call to the getToken method 
         // from the AuthService.
-          setHeaders: {
+          setHeaders: {            
             Authorization: `Bearer ${this.auth.getToken()}`
           }
       });

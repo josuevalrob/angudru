@@ -7,7 +7,8 @@ import { UserlistComponent } from './userlist/userlist.component'
 import { UserloginComponent } from './userlogin/userlogin.component'
 
 const routes: Routes = [
-  { path: '', component: UserlistComponent, canActivate: [GuardService] },
+  // { path: '', component: UserlistComponent, canActivate: [GuardService] },
+  { path: '', component: UserlistComponent},
   { path: 'login', component: UserloginComponent},
   //Home sweet home:
   { path: '**', redirectTo: '' }

@@ -24,9 +24,11 @@ export class HandleErrorService {
   	    // The backend returned an unsuccessful response code.
   	    // The response body may contain clues as to what went wrong,  	    
   	    if (err.status == 401) {
-  	    	 errorMessage = `Invalid credentials, ${err.error.message}`;
+  	    	// console.log ('loser 401')
+           errorMessage = `Invalid credentials, ${err.error.message}`;
   	    }
   	    if (err.status == 403) {
+          // console.log ('loser 403')
   	    	 errorMessage = `Forbiden loser!!, ${err.error.message}`;
   	    }
   	  }  	  

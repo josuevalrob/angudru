@@ -11,11 +11,11 @@ export class GuardService implements CanActivate {
 
   canActivate(): boolean {
   	if (!this.auth.isAuthenticated()){
-  		// console.log ('bye');
+  		console.log ('bye');
   		// this.router.navigate(['/login']);
   		return false;
   	}
-  	// console.log ('Welcome');
+  	console.log ('Welcome');
   	return true;
   }
 
