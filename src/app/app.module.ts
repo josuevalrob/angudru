@@ -23,7 +23,6 @@ import { RefreshTokenService } from './services/refresh-token.service';
 
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { RequestInterceptor } from './interceptor/request.interceptor';
-import { ResponseInterceptor } from './interceptor/response.interceptor'
 export function tokenGetter() {
   return localStorage.getItem('token');
 }
@@ -57,11 +56,6 @@ export function tokenGetter() {
     {      
       provide: HTTP_INTERCEPTORS,
       useClass: RequestInterceptor,
-      multi: true
-    },
-    {      
-      provide: HTTP_INTERCEPTORS,
-      useClass: ResponseInterceptor,
       multi: true
     }
     ],

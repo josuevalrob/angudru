@@ -25,7 +25,7 @@ export class RefreshTokenService {
   constructor(private http: HttpClient, public auth: AuthService, private handleError: HandleErrorService) { }
 
   refreshToken(): Observable<string> {
-    let refreshAuth = this.getRefreshToken(); //get refresh token from storage
+    let refreshAuth = this.auth.getrefreshToken(); //get refresh token from storage
     let url: string = this.mainUrl + "oauth/token";
     console.log ('refresh ' + JSON.stringify(refreshAuth));
 
@@ -37,17 +37,13 @@ export class RefreshTokenService {
     
     return this.http.post(url, body)      
 		.map((token: Token) => {      		
-			localStorage.setItem('new_token', JSON.stringify(token.access_token));
-      localStorage.setItem('new_refresh_token', JSON.stringify(token.refresh_token));
+			localStorage.setItem('token', JSON.stringify(token.access_token));
+      localStorage.setItem('refresh_token', JSON.stringify(token.refresh_token));
     	console.log (JSON.stringify ('new token from the service ' + token.refresh_token));
-      	return token.refresh_token;
+      	return token.access_token;
 		});
   }
 
-  public getRefreshToken(): string {
-    let refresh_token = localStorage.getItem('refresh_token');
-    return JSON.parse(refresh_token);
-
-  }
+  
 
 }
