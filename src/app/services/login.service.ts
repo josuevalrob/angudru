@@ -21,6 +21,7 @@ export class LoginService {
 	private client_secret = environment.client_secret
 
   constructor(private http: HttpClient, private handleError: HandleErrorService) { }
+  
   login (user, pass): Observable<Token> {  	
   	  const url = `${this.mainUrl}oauth/token`;  
   	  let body= new FormData();  	  
@@ -30,14 +31,11 @@ export class LoginService {
   	  body.append("username", user);
   	  body.append("password", pass);  	  
       return this.http.post(url, body)      
-      			.map((token: Token) => {      		
-              // let tokenParse = JSON.parse(token.access_token)		
-      				// localStorage.setItem('token', JSON.stringify(tokenParse));
+      			.map((token: Token) => {      		              
       				localStorage.setItem('token', JSON.stringify(token.access_token));
               localStorage.setItem('refresh_token', JSON.stringify(token.refresh_token));
               return token.access_token      				
-      			})
-      			// .catch(this.handleError)
+      			})      			
             .catch(this.handleError.handleError);    			
   }
   
@@ -45,6 +43,8 @@ export class LoginService {
   	localStorage.removeItem('token');
     localStorage.removeItem('refresh_token');
   	// console.log ('localstorage logout' + localStorage['token']);  
+    return Observable.throw("");
+
   }
 
 }

@@ -3,13 +3,9 @@
 // 403 forbiden
 // 40? for refresh token
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpErrorResponse } from "@angular/common/http";
-
+// import { HttpClient, HttpInterceptor, HttpRequest, HttpHandler, HttpSentEvent, HttpHeaderResponse, HttpProgressEvent, HttpResponse, HttpUserEvent, HttpErrorResponse } from "@angular/common/http";
+import { HttpClient, HttpErrorResponse } from "@angular/common/http";
 import { Observable } from 'rxjs/Observable';
-import { catchError, map, tap } from 'rxjs/operators';
-import 'rxjs/add/operator/map'
-import 'rxjs/add/operator/catch';
-import 'rxjs/add/observable/throw';
 
 @Injectable()
 export class HandleErrorService {
@@ -34,5 +30,4 @@ export class HandleErrorService {
   	  }  	  
   	  return Observable.throw(errorMessage);
   }
-
 }

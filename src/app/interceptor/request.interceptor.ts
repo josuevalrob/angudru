@@ -1,65 +1,126 @@
 import { Injectable } from '@angular/core';
-import {
-  HttpRequest,
-  HttpHandler,
-  HttpEvent,
-  HttpInterceptor, 
-  HttpErrorResponse,
-  HttpResponse
-} from '@angular/common/http';
+import { HttpClient, HttpInterceptor, HttpRequest, HttpHandler, HttpSentEvent, HttpHeaderResponse, HttpProgressEvent, HttpResponse, HttpUserEvent, HttpErrorResponse } from "@angular/common/http";
+
 import { RefreshTokenService } from '../services/refresh-token.service'
 import { Token } from './../token'
 import 'rxjs/add/operator/do';
+import 'rxjs/add/operator/map'
+import 'rxjs/add/operator/catch';
+import 'rxjs/add/observable/throw';
+import 'rxjs/add/operator/switchMap';
+import 'rxjs/add/operator/finally';
+import 'rxjs/add/operator/filter';
+import 'rxjs/add/operator/take';
+
 import { AuthService } from '../services/auth.service';
 import { Observable } from 'rxjs/Observable';
 import { BehaviorSubject } from "rxjs/BehaviorSubject";
 
+import { HandleErrorService } from '../services/handle-error.service'
+import { LoginService } from '../services/login.service';
 
 @Injectable()
 // HttpInterceptor interface. 
 export class RequestInterceptor implements HttpInterceptor {
 
+
     isRefreshingToken: boolean = false;
     tokenSubject: BehaviorSubject<string> = new BehaviorSubject<string>(null);
 
-  constructor(public auth: AuthService, public refresh: RefreshTokenService) {}
-  
-  addToken(req: HttpRequest<any>, token: string): HttpRequest<any> {
-      return req.clone({ setHeaders: { Authorization: 'Bearer ' + token }})
-  }
+    constructor(private authService: AuthService, public login: LoginService, public handleError: HandleErrorService, private refreshToken: RefreshTokenService) {}
+    // addToken will add the Bearer token to the Authorization header
+    addToken(req: HttpRequest<any>, token: string): HttpRequest<any> {
+        return req.clone({ setHeaders: { Authorization: 'Bearer ' + token }})
+    }
+    // The RequestInterceptorService will implement HttpInterceptor which has only one method:  
+    // intercept.  It will add a token to the header on each call and catch any errors that might occur.
+    intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpSentEvent | HttpHeaderResponse | HttpProgressEvent | HttpResponse<any> | HttpUserEvent<any>> {
+        // In the intercept method, we return next.handle and pass in the cloned request with a header added
+        // Get the auth token from the AuthService
+        console.log('here we go');
+        return next.handle(this.addToken(req, this.authService.getToken()))
+          .catch(error => {
+             if (error instanceof HttpErrorResponse) {
+                     switch ((<HttpErrorResponse>error).status) {
+                         case 400:
+                             return this.handle400Error(error);
+                         case 401:
+                             return this.handle401Error(req, next);
+                     }
+             } else {
+               return Observable.throw(error);
+            }
+          });
+    }
 
-  // method called intercept with HttpRequest and HttpHandler parameters. 
-  // intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpSentEvent | HttpHeaderResponse | HttpProgressEvent | HttpResponse<any> | HttpUserEvent<any>> {
-  intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {    
-    // Using interceptors is all about changing outgoing requests and incoming responses, 
-    // but we can’t tamper with the original request–it needs to be immutable. 
-    // To make changes we need to clone the original request.      
-      // console.log('intercepted request ' + JSON.stringify(request)); 
-      // request = request.clone({
-      //   // add an Authorization header with an auth scheme of Bearer followed by the 
-      //   // JSON Web Token in local storage which we get from a call to the getToken method 
-      //   // from the AuthService.
-      //     setHeaders: {            
-      //       Authorization: `Bearer ${this.auth.getToken()}`
-      //     }
-      // });
-      // Calling next.handle means that we are passing control to the next interceptor in the chain, if there is one.
-      return next.handle(request).do((event: HttpEvent<any>) => {
-        if (event instanceof HttpResponse) {
-          // do stuff with response if you want
-        }
-      },(err: any) => {
-        if (err instanceof HttpErrorResponse) {
-          if (err.status === 403) {
-            // this.auth.collectFailedRequest(request);
-            console.log ('403 error! now, refresh token');        
-            const newtoken =  this.refresh.refreshToken().subscribe((response:any)=>{})
+    // The code to handle the 401 error is the most important.
+        handle401Error(req: HttpRequest<any>, next: HttpHandler) {
+            // If isRefreshingToken is false (which it is by default) we will 
+            // enter the code section that calls authService.refreshToken
+            if (!this.isRefreshingToken) { 
+                // Immediately set isRefreshingToken to true so no more calls 
+                // come in and call refreshToken again – which we don’t want of course
+                this.isRefreshingToken = true; 
 
-            console.log ('new token... ' + JSON.stringify(newtoken));
-              // error => this.errorMsg = error
-            
-          }
+                // Reset here so that the following requests wait until the token
+                // comes back from the refreshToken call.
+                this.tokenSubject.next(null);
+                // Call authService.refreshToken (this is an Observable that will be returned)
+                return this.refreshToken.refreshToken()
+                    .switchMap((newToken: string) => {
+                        if (newToken) {
+                            // When successful, call tokenSubject.next on the new token, 
+                            // this will notify the API calls that came in after the refreshToken 
+                            // call that the new token is available and that they can now use it
+                            this.tokenSubject.next(newToken);
+                            // Return next.handle using the new token
+                            return next.handle(this.addToken(req, newToken));
+                        }
+
+                        // If we don't get a new token, we are in trouble so logout.
+                        return this.login.logout();
+                    })
+                    .catch(error => {
+                        // If there is an exception calling 'refreshToken', bad news so logout.
+                        return this.login.logout();
+                    })
+                    .finally(() => {
+                        // When the call to refreshToken completes, in the finally block, 
+                        // reset the isRefreshingToken to false for the next time the token needs to be refreshed
+                        this.isRefreshingToken = false;
+                    });
+            // Note that no matter which path is taken, we must return an Observable that ends up 
+            // resolving to a next.handle call so that the original call is matched with the altered call                
+            }
+            // If isRefreshingToken is true, we will wait until tokenSubject has a non-null value 
+            // – which means the new token is ready 
+            else {
+
+                return this.tokenSubject
+                    .filter(token => token != null)
+                    // Only take 1 here to avoid returning two – which will cancel the request
+                    .take(1)
+                    .switchMap(token => {
+                        // When the token is available, return the next.handle of the new request
+                        return next.handle(this.addToken(req, token));
+                    });
+            }
         }
-      });
-  }
+
+        handle400Error(error) {
+            // Some may be wondering at this point what would happen if the refresh token times out.  
+            // Usually caused by not making any API calls for whatever the timeout is configured for.  
+            // Well, what happens is that you should see a 400 error with an ‘invalid_grant’ message.  
+            // So the handle400Error code should most likely log out the user and direct them to the login page.
+            if (error && error.status === 400 && error.error && error.error.error === 'invalid_grant') {
+                // If we get a 400 and the error message is 'invalid_grant', the token is no longer valid so logout.
+                return this.login.logout();
+            }
+
+            return Observable.throw(error);
+        }
+
+
+
+
 }
