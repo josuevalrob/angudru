@@ -12,6 +12,7 @@ import { environment } from '../../environments/environment';
 import { Token } from '../token';
 
 import { HandleErrorService } from './handle-error.service';
+import { Router, ActivatedRoute } from '@angular/router';
 
 @Injectable()
 export class LoginService {
@@ -20,7 +21,7 @@ export class LoginService {
 	private client_id = environment.client_id
 	private client_secret = environment.client_secret
 
-  constructor(private http: HttpClient, private handleError: HandleErrorService) { }
+  constructor(private http: HttpClient, private handleError: HandleErrorService, private router: Router, private route: ActivatedRoute ) { }
   
   login (user, pass): Observable<Token> {  	
   	  const url = `${this.mainUrl}oauth/token`;  
@@ -43,6 +44,8 @@ export class LoginService {
   	localStorage.removeItem('token');
     localStorage.removeItem('refresh_token');
   	// console.log ('localstorage logout' + localStorage['token']);  
+    this.router.navigate (['/login']);
+
     return Observable.throw("");
 
   }

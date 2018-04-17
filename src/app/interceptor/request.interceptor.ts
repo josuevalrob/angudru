@@ -38,13 +38,15 @@ export class RequestInterceptor implements HttpInterceptor {
         // In the intercept method, we return next.handle and pass in the cloned request with a header added
         // Get the auth token from the AuthService
         console.log('here we go');
-        return next.handle(this.addToken(req, this.authService.getToken()))
+        return next.handle(this.addToken(req, this.authService.getToken()))        
           .catch(error => {
              if (error instanceof HttpErrorResponse) {
                      switch ((<HttpErrorResponse>error).status) {
-                         case 400:
-                             return this.handle400Error(error);
                          case 401:
+                              console.log('error 401'); 
+                             return this.handle400Error(error);
+                         case 403:
+                             console.log('error 401');
                              return this.handle401Error(req, next);
                      }
              } else {
@@ -108,12 +110,14 @@ export class RequestInterceptor implements HttpInterceptor {
         }
 
         handle400Error(error) {
+            console.log('outside conditional');
             // Some may be wondering at this point what would happen if the refresh token times out.  
             // Usually caused by not making any API calls for whatever the timeout is configured for.  
             // Well, what happens is that you should see a 400 error with an ‘invalid_grant’ message.  
             // So the handle400Error code should most likely log out the user and direct them to the login page.
-            if (error && error.status === 400 && error.error && error.error.error === 'invalid_grant') {
+            if (error && error.status === 401 || error.error && error.error.error === 'invalid_grant') {
                 // If we get a 400 and the error message is 'invalid_grant', the token is no longer valid so logout.
+                console.log('inside the conditional');
                 return this.login.logout();
             }
 
