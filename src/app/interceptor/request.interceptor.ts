@@ -1,8 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpInterceptor, HttpRequest, HttpHandler, HttpSentEvent, HttpHeaderResponse, HttpProgressEvent, HttpResponse, HttpUserEvent, HttpErrorResponse } from "@angular/common/http";
 
-import { RefreshTokenService } from '../services/refresh-token.service'
-import { Token } from './../token'
 import 'rxjs/add/operator/do';
 import 'rxjs/add/operator/map'
 import 'rxjs/add/operator/catch';
@@ -12,11 +10,11 @@ import 'rxjs/add/operator/finally';
 import 'rxjs/add/operator/filter';
 import 'rxjs/add/operator/take';
 
-import { AuthService } from '../services/auth.service';
 import { Observable } from 'rxjs/Observable';
 import { BehaviorSubject } from "rxjs/BehaviorSubject";
 
-import { HandleErrorService } from '../services/handle-error.service'
+import { RefreshTokenService } from '../services/refresh-token.service'
+import { AuthService } from '../services/auth.service';
 import { LoginService } from '../services/login.service';
 
 @Injectable()
@@ -27,7 +25,7 @@ export class RequestInterceptor implements HttpInterceptor {
     isRefreshingToken: boolean = false;
     tokenSubject: BehaviorSubject<string> = new BehaviorSubject<string>(null);
 
-    constructor(private authService: AuthService, public login: LoginService, public handleError: HandleErrorService, private refreshToken: RefreshTokenService) {}
+    constructor(private authService: AuthService, public login: LoginService, private refreshToken: RefreshTokenService) {}
     // addToken will add the Bearer token to the Authorization header
     addToken(req: HttpRequest<any>, token: string): HttpRequest<any> {
         return req.clone({ setHeaders: { Authorization: 'Bearer ' + token }})
@@ -44,10 +42,10 @@ export class RequestInterceptor implements HttpInterceptor {
                      switch ((<HttpErrorResponse>error).status) {
                          case 401:
                               console.log('error 401'); 
-                             return this.handle400Error(error);
+                             return this.handle401Error(error);
                          case 403:
-                             console.log('error 401');
-                             return this.handle401Error(req, next);
+                             console.log('error 403');
+                             return this.handle403Error(req, next);
                      }
              } else {
                return Observable.throw(error);
@@ -56,7 +54,7 @@ export class RequestInterceptor implements HttpInterceptor {
     }
 
     // The code to handle the 401 error is the most important.
-        handle401Error(req: HttpRequest<any>, next: HttpHandler) {
+        handle403Error(req: HttpRequest<any>, next: HttpHandler) {
             // If isRefreshingToken is false (which it is by default) we will 
             // enter the code section that calls authService.refreshToken
             if (!this.isRefreshingToken) { 
@@ -109,12 +107,12 @@ export class RequestInterceptor implements HttpInterceptor {
             }
         }
 
-        handle400Error(error) {
+        handle401Error(error) {
             console.log('outside conditional');
             // Some may be wondering at this point what would happen if the refresh token times out.  
             // Usually caused by not making any API calls for whatever the timeout is configured for.  
             // Well, what happens is that you should see a 400 error with an ‘invalid_grant’ message.  
-            // So the handle400Error code should most likely log out the user and direct them to the login page.
+            // So the handle401Error code should most likely log out the user and direct them to the login page.
             if (error && error.status === 401 || error.error && error.error.error === 'invalid_grant') {
                 // If we get a 400 and the error message is 'invalid_grant', the token is no longer valid so logout.
                 console.log('inside the conditional');
