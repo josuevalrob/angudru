@@ -32,12 +32,12 @@ export class LoginService {
   	  body.append("username", user);
   	  body.append("password", pass);  	  
       return this.http.post(url, body)      
-      			.map((token: Token) => {      		              
-      				localStorage.setItem('token', JSON.stringify(token.access_token));
-              localStorage.setItem('refresh_token', JSON.stringify(token.refresh_token));
-              return token.access_token      				
+      			.map((token: Token) => {      
+ 	  				localStorage.setItem('token', JSON.stringify(token.access_token));
+	            	localStorage.setItem('refresh_token', JSON.stringify(token.refresh_token));
+              		return token.access_token      				
       			})      			
-            .catch(this.handleError.handleError);    			
+            .catch(this.handleError.handleError);
   }
   
   logout() {
