@@ -23,9 +23,8 @@ public getrefreshToken(): string {
 
   public isAuthenticated(): boolean {
   	// console.log (localStorage['token']);
+    console.log ('is Authenticated')
   	const token = this.getToken();
-  	// let tokenParse = JSON.parse(token)		
-  	// console.log(JSON.stringify(tokenParse));
   	// Check wheter the token is expired and return true or false
   	return !this.jwtHelper.isTokenExpired(token);
   }
